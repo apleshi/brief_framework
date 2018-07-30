@@ -1,43 +1,40 @@
 package brief_framework
 
 import (
-	"config"
-	"logger"
-	"server_plugin"
-	"tools"
-	_ "schedule"
+	"brief_framework/config"
+	"brief_framework/logger"
+	"brief_framework/plugin"
+	"brief_framework/util"
 	"context"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"time"
 )
 
-
 func Serve() {
 	//check older log, to delete
-	tools.DoDeleteWork()
-	logger.Instance().Info("Init complete, Server start...go")
+	util.Clean()
+	logger.Instance().Info("Init complete, start Servant ...")
 
-	serve_addr, err := config.Instance().GetValue("online", "serve_addr")
+	serveAddr, err := config.Instance().GetValue(config.RunningMode(), "serve_addr")
 	if err != nil {
-		logger.Instance().Warn("GetValue serve_addr error, err = %v", err)
-		serve_addr = ":8081"
+		logger.Instance().Warn("Serve get serve_addr config error, msg = %v", err)
+		serveAddr = ":8089"
 	}
 
-	logger.Instance().Info("Server address is %s.", serve_addr)
+	logger.Instance().Info("Server address is %s.", serveAddr)
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
-	router.Use(tools.LoggerM())
+	router.Use(plugin.LoggerM())
 	router.Use(gin.Recovery()) //for Recovery
 
-	server_plugin.InitHandle(router)
+	plugin.InitHandler(router)
 
 	srv := &http.Server{
-		Addr:    serve_addr,
+		Addr:    serveAddr,
 		Handler: router,
 	}
 
@@ -61,5 +58,4 @@ func Serve() {
 	}
 	time.Sleep(time.Millisecond * 100)
 	logger.Instance().Close()
-
 }
