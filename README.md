@@ -6,6 +6,11 @@
 ```sh
 $ go get github.com/gin-gonic/gin
 $ go get github.com/go-redis/redis
+$ go get github.com/Unknwon/goconfig
+```
+注：如果导入失败，可以尝试执行如下命令 :
+```sh
+$ yum update nss curl libcurl
 ```
 ### 使用
 
@@ -20,13 +25,13 @@ import "brief_framework"
 Get方法，需要实现GetHandle
 
 ```go
-type GetHandle func(map[string]string)(interface{})
+type GetHandler func(map[string]string)(interface{})
 ```
 
 参数为Query中的参数, 需要返回一个JSON的结构体. 如: 
 
 ```go
-var get_handle server_plugin.GetHandle = func(m map[string]string) interface{} {
+var get_handle plugin.GetHandler = func(m map[string]string) interface{} {
 	type JsonHolder struct {
 		Id   int    `json:"id"`
 		Name string `json:"name"`
@@ -41,10 +46,11 @@ var get_handle server_plugin.GetHandle = func(m map[string]string) interface{} {
 
 ```go
 func init() {
-	server_plugin.AddProcess("/get", SampleGet)
-	server_plugin.AddProcess("/post", SamplePost)
+	server_plugin.AddProcess("/get", sampleGet)
+	server_plugin.AddProcess("/post", samplePost)
 }
 ```
+
 4. 启动
 ```go
 func main() {
