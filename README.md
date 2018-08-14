@@ -46,8 +46,8 @@ var get_handle plugin.GetHandler = func(m map[string]string) interface{} {
 
 ```go
 func init() {
-	server_plugin.AddProcess("/get", sampleGet)
-	server_plugin.AddProcess("/post", samplePost)
+	plugin.AddProcess("/get", sampleGet)
+	plugin.AddProcess("/post", samplePost)
 }
 ```
 
