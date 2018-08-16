@@ -48,6 +48,7 @@ func init() {
 	reportUrl = conf.MustValue("report", "address", "http://127.0.0.1:1988/v1/push")
 	contentType = conf.MustValue("report", "content-type", "application/json")
 	reportMethod = conf.MustValue("report", "method", "POST")
+	thresholdTime = conf.MustFloat64("report", "response_time_thres", 1000)
 
 	gap = conf.MustInt64("report", "interval", 60)
 	schedule.DoFuncWithTimer(doReport, time.Duration(gap) * time.Second)
@@ -65,7 +66,13 @@ func collectData(elapseTime float64) {
 	sumTime += elapseTime / float64(time.Millisecond)
 	count++
 
-	logger.Instance().Debug("collectData one data elapseTime %f, count %d", elapseTime, count)
+	logger.Instance().Debug("collectData one data elapseTime %.3f, count %d", elapseTime, count)
+}
+
+func clearIndicator() {
+	count = 0
+	sumTime = 0
+	overThresCount = 0
 }
 
 func doReport() error {
@@ -74,12 +81,16 @@ func doReport() error {
 	var endPoint string
 	var bodyStr []byte
 	var reportData []IndicatorDef
-	var reportMetrics =
-		map[string]interface{}{
+	var reportMetrics map[string]interface{}
+
+	defer clearIndicator()
+
+	reportMetrics = map[string]interface{} {
 		"avgTime" : sumTime / (float64(count)),
 		"maxTime" : maxTime,
 		"overThresCount" : overThresCount,
-		"qps" : count / gap,
+		// "qps" : count / gap,
+		"qps" : 0,
 	}
 
 	timestamp = time.Now().Unix()
@@ -104,5 +115,6 @@ func doReport() error {
 	}
 
 	resp.Body.Close()
+
 	return nil
 }
