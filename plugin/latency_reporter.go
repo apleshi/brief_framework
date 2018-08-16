@@ -13,14 +13,14 @@ import (
 	"brief_framework/logger"
 )
 
-type indicatorDef struct {
-	endpoint string
-	metric string
-	timestamp int64
-	step int64
-	value interface{}
-	counterType string
-	tags string
+type IndicatorDef struct {
+	Endpoint string			`json:"endpoint"`
+	Metric string			`json:"metric"`
+	Timestamp int64			`json:"timestamp"`
+	Step int64				`json:"step"`
+	Value interface{}		`json:"value"`
+	CounterType string		`json:"counterType"`
+	Tags string				`json:"tags"`
 }
 
 var (
@@ -49,7 +49,7 @@ func init() {
 	contentType = conf.MustValue("report", "content-type", "application/json")
 	reportMethod = conf.MustValue("report", "method", "POST")
 
-	gap := conf.MustInt("report", "interval", 60)
+	gap = conf.MustInt64("report", "interval", 60)
 	schedule.DoFuncWithTimer(doReport, time.Duration(gap) * time.Second)
 }
 
@@ -62,8 +62,10 @@ func collectData(elapseTime float64) {
 		overThresCount++
 	}
 
-	sumTime += elapseTime
+	sumTime += elapseTime / float64(time.Millisecond)
 	count++
+
+	logger.Instance().Debug("collectData one data elapseTime %f, count %d", elapseTime, count)
 }
 
 func doReport() error {
@@ -71,7 +73,7 @@ func doReport() error {
 	var timestamp int64
 	var endPoint string
 	var bodyStr []byte
-	var reportData []indicatorDef
+	var reportData []IndicatorDef
 	var reportMetrics =
 		map[string]interface{}{
 		"avgTime" : sumTime / (float64(count)),
@@ -84,7 +86,7 @@ func doReport() error {
 	endPoint = "onlineFeature-" + util.GetIntranetIp()
 
 	for key, val := range reportMetrics {
-		reportData = append(reportData, indicatorDef{endPoint, key, timestamp, gap, val, "GAUGE", ""})
+		reportData = append(reportData, IndicatorDef{endPoint, key, timestamp, gap, val, "GAUGE", ""})
 	}
 
 	bodyStr, err = json.Marshal(reportData)

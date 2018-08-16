@@ -7,6 +7,7 @@
 $ go get github.com/gin-gonic/gin
 $ go get github.com/go-redis/redis
 $ go get github.com/Unknwon/goconfig
+$ go get github.com/robfig/cron
 ```
 注：如果导入失败，可以尝试执行如下命令 :
 ```sh
