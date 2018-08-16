@@ -38,10 +38,9 @@ func doFunc(f func() error) {
 	}()
 }
 
-func doFuncWithTimer(f func() error, duration time.Duration) {
+func DoFuncWithTimer(f func() error, duration time.Duration) {
 	go func() {
 		var ticker = time.NewTicker(duration)
-		//time.Sleep(time.)
 		for _ = range ticker.C {
 			i := 0
 			for ; i < 3; i++ {
