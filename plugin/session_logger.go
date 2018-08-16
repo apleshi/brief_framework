@@ -21,7 +21,7 @@ func LoggerWithWriter() gin.HandlerFunc {
 
 		end := time.Now()
 		latency := end.Sub(start)
-		collectData(float64(latency))
+		collectData(latency)
 
 		clientIP := c.ClientIP()
 		method := c.Request.Method

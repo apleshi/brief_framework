@@ -8,7 +8,7 @@ import (
 	"brief_framework/util/schedule"
 	"brief_framework/util"
 	"net/http"
-	"github.com/gin-gonic/gin/json"
+	"encoding/json"
 	"strings"
 	"brief_framework/logger"
 )
@@ -54,19 +54,20 @@ func init() {
 	schedule.DoFuncWithTimer(doReport, time.Duration(gap) * time.Second)
 }
 
-func collectData(elapseTime float64) {
-	if elapseTime > maxTime {
-		maxTime = elapseTime
+func collectData(elapseTime time.Duration) {
+	costInMs := float64(elapseTime / time.Millisecond)
+	if costInMs > maxTime {
+		maxTime = costInMs
 	}
 
-	if elapseTime > thresholdTime {
+	if costInMs > thresholdTime {
 		overThresCount++
 	}
 
-	sumTime += elapseTime / float64(time.Millisecond)
+	sumTime += costInMs
 	count++
 
-	logger.Instance().Debug("collectData one data elapseTime %.3f, count %d", elapseTime, count)
+	logger.Instance().Debug("collectData one data elapseTime %.3f, count %d", costInMs, count)
 }
 
 func clearIndicator() {
@@ -89,8 +90,7 @@ func doReport() error {
 		"avgTime" : sumTime / (float64(count)),
 		"maxTime" : maxTime,
 		"overThresCount" : overThresCount,
-		// "qps" : count / gap,
-		"qps" : 0,
+		"qps" : count / gap,
 	}
 
 	timestamp = time.Now().Unix()
