@@ -24,10 +24,10 @@ type IndicatorDef struct {
 }
 
 var (
-	maxTime, sumTime, thresholdTime float64
 	gap, count, overThresCount int64
 	conf *goconfig.ConfigFile
 	reportUrl, contentType, reportMethod string
+	maxTime, avgTime, sumTime, thresholdTime float64
 )
 
 func init() {
@@ -55,7 +55,7 @@ func init() {
 }
 
 func collectData(elapseTime time.Duration) {
-	costInMs := float64(elapseTime / time.Millisecond)
+	costInMs := float64(elapseTime) / float64(time.Millisecond)
 	if costInMs > maxTime {
 		maxTime = costInMs
 	}
@@ -72,32 +72,41 @@ func collectData(elapseTime time.Duration) {
 
 func clearIndicator() {
 	count = 0
+	avgTime = 0
 	sumTime = 0
+	maxTime = 0
 	overThresCount = 0
 }
 
 func doReport() error {
 	var err error
-	var timestamp int64
-	var endPoint string
+	var timestamp, qps int64
 	var bodyStr []byte
 	var reportData []IndicatorDef
 	var reportMetrics map[string]interface{}
 
 	defer clearIndicator()
 
+	if count != 0 {
+		avgTime = sumTime / float64(count)
+		qps = count / gap
+	}
 	reportMetrics = map[string]interface{} {
-		"avgTime" : sumTime / (float64(count)),
-		"maxTime" : maxTime,
-		"overThresCount" : overThresCount,
-		"qps" : count / gap,
+		"bigdata.feature.avgTime" : avgTime,
+		"bigdata.feature.maxTime" : maxTime,
+		"bigdata.feature.overThresCount" : overThresCount,
+		"bigdata.feature.qps" : qps,
 	}
 
 	timestamp = time.Now().Unix()
-	endPoint = "onlineFeature-" + util.GetIntranetIp()
+	endPoint, err := os.Hostname()
+	if err != nil {
+		logger.Instance().Warn("doReport err on gethostname %s", err.Error())
+		endPoint = "client-ds-248-35.hadoop.lq2"
+	}
 
 	for key, val := range reportMetrics {
-		reportData = append(reportData, IndicatorDef{endPoint, key, timestamp, gap, val, "GAUGE", ""})
+		reportData = append(reportData, IndicatorDef{endPoint, key, timestamp, gap, val, "GAUGE", util.GetIntranetIp()})
 	}
 
 	bodyStr, err = json.Marshal(reportData)
