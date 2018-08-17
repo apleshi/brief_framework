@@ -6,7 +6,6 @@ import (
 	"brief_framework/config"
 	"time"
 	"brief_framework/util/schedule"
-	"brief_framework/util"
 	"net/http"
 	"encoding/json"
 	"strings"
@@ -111,7 +110,7 @@ func doReport() error {
 	//}
 
 	for key, val := range reportMetrics {
-		reportData = append(reportData, IndicatorDef{endPoint, key, timestamp, gap, val, "GAUGE", util.GetIntranetIp()})
+		reportData = append(reportData, IndicatorDef{endPoint, key, timestamp, gap, val, "GAUGE", ""})
 	}
 
 	bodyStr, err = json.Marshal(reportData)
