@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"strings"
 	"brief_framework/logger"
+	"io/ioutil"
 )
 
 type IndicatorDef struct {
@@ -26,7 +27,7 @@ type IndicatorDef struct {
 var (
 	gap, count, overThresCount int64
 	conf *goconfig.ConfigFile
-	reportUrl, contentType, reportMethod string
+	endPoint, reportUrl, contentType, reportMethod string
 	maxTime, avgTime, sumTime, thresholdTime float64
 )
 
@@ -51,6 +52,9 @@ func init() {
 	thresholdTime = conf.MustFloat64("report", "response_time_thres", 1000)
 
 	gap = conf.MustInt64("report", "interval", 60)
+	agentConfFile := conf.MustValue("report", "agent_config", "/usr/local/open-falcon/agent/cfg.json")
+	endPoint = getHostName(agentConfFile)
+
 	schedule.DoFuncWithTimer(doReport, time.Duration(gap) * time.Second)
 }
 
@@ -98,12 +102,13 @@ func doReport() error {
 		"bigdata.feature.qps" : qps,
 	}
 
+
 	timestamp = time.Now().Unix()
-	endPoint, err := os.Hostname()
-	if err != nil {
-		logger.Instance().Warn("doReport err on gethostname %s", err.Error())
-		endPoint = "client-ds-248-35.hadoop.lq2"
-	}
+	//endPoint, err := os.Hostname()
+	//if err != nil {
+	//	logger.Instance().Warn("doReport err on gethostname %s", err.Error())
+	//	endPoint = "l25-248-35.lq2.autohome.cc"
+	//}
 
 	for key, val := range reportMetrics {
 		reportData = append(reportData, IndicatorDef{endPoint, key, timestamp, gap, val, "GAUGE", util.GetIntranetIp()})
@@ -126,4 +131,84 @@ func doReport() error {
 	resp.Body.Close()
 
 	return nil
+}
+
+func getHostName(filename string) string {
+	/*
+	#/usr/local/open-falcon/agent/cfg.json
+	{
+		"debug": false,
+		"hostname":"l25-248-35.lq2.autohome.cc",
+		"ip":"10.25.248.35",
+		"plugin": {
+			"enabled": true,
+			"dir": "/usr/local/open-falcon/plugins",
+			"git": "https://github.com/open-falcon/plugin.git",
+			"logs": "./logs"
+		},
+		"heartbeat": {
+			"enabled": true,
+			"addr": "10.23.3.123:6030",
+			"interval": 60,
+			"timeout": 1000
+		},
+		"transfer": {
+			"enabled": true,
+			"addrs": [
+				"10.33.3.5:8433",
+			"10.20.2.45:8433",
+				"10.20.2.46:8433",
+				"10.20.2.47:8433"
+		],
+			"interval": 60,
+			"timeout": 1000
+		},
+		"http": {
+			"enabled": true,
+			"listen": ":1988",
+			"backdoor": false
+		},
+		"collector": {
+			"ifacePrefix": ["eth", "em", "bond" ," vir", "p3p"]
+		},
+		"ignore": {
+			"cpu.busy": true,
+			"df.bytes.free": true,
+			"df.bytes.total": true,
+			"df.bytes.used": true,
+			"df.bytes.used.percent": true,
+			"df.inodes.total": true,
+			"df.inodes.free": true,
+			"df.inodes.used": true,
+			"df.inodes.used.percent": true,
+			"mem.memtotal": true,
+			"mem.memused": true,
+			"mem.memused.percent": true,
+			"mem.memfree": true,
+			"mem.swaptotal": true,
+			"mem.swapused": true,
+			"mem.swapfree": true
+		}
+	}
+	 */
+	if _ , err := os.Stat(filename); err != nil {
+		logger.Instance().Warn("getHostName not find agent configfile %s, err %s", filename, err.Error())
+		return "l25-248-35.lq2.autohome.cc"
+	}
+
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		logger.Instance().Warn("getHostName read agent configfile %s err %s.", filename, err.Error())
+		return "l25-248-35.lq2.autohome.cc"
+	}
+
+	v := make(map[string]interface{})
+	//读取的数据为json格式，需要进行解码
+	err = json.Unmarshal(data, &v)
+	if err != nil {
+		logger.Instance().Warn("getHostName Unmarshal config %s err %s.", data, err.Error())
+		return "l25-248-35.lq2.autohome.cc"
+	}
+
+	return v["hostname"].(string)
 }
