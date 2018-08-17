@@ -124,7 +124,7 @@ func doReport() error {
 
 	resp, e := http.Post(reportUrl, contentType, strings.NewReader(string(bodyStr)))
 	if e != nil {
-		logger.Instance().Error("latency report error on post data %s", bodyStr)
+		logger.Instance().Error("latency report error on post data %s, err is %s", bodyStr, e.Error())
 		return nil
 	}
 
