@@ -99,6 +99,7 @@ func doReport() error {
 		"bigdata.feature.maxTime" : maxTime,
 		"bigdata.feature.overThresCount" : overThresCount,
 		"bigdata.feature.qps" : qps,
+		"bigdata.feature.cnt" : count,
 	}
 
 
