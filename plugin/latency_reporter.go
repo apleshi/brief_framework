@@ -49,7 +49,7 @@ func init() {
 	contentType = conf.MustValue("report", "content-type", "application/json")
 	reportMethod = conf.MustValue("report", "method", "POST")
 	thresholdTime = conf.MustFloat64("report", "response_time_thres", 1000)
-	matricPre = conf.MustValue("report", "metric_pre", "metric.pre.def")
+	matricPre = conf.MustValue("report", "metric_pre", "")
 
 	gap = conf.MustInt64("report", "interval", 60)
 	agentConfFile := conf.MustValue("report", "agent_config", "/usr/local/open-falcon/agent/cfg.json")
