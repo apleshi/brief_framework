@@ -26,7 +26,7 @@ type IndicatorDef struct {
 var (
 	gap, count, overThresCount int64
 	conf *goconfig.ConfigFile
-	endPoint, reportUrl, contentType, reportMethod string
+	matricPre, endPoint, reportUrl, contentType, reportMethod string
 	maxTime, avgTime, sumTime, thresholdTime float64
 )
 
@@ -49,6 +49,7 @@ func init() {
 	contentType = conf.MustValue("report", "content-type", "application/json")
 	reportMethod = conf.MustValue("report", "method", "POST")
 	thresholdTime = conf.MustFloat64("report", "response_time_thres", 1000)
+	matricPre = conf.MustValue("report", "metric_pre", "metric.pre.def")
 
 	gap = conf.MustInt64("report", "interval", 60)
 	agentConfFile := conf.MustValue("report", "agent_config", "/usr/local/open-falcon/agent/cfg.json")
@@ -95,11 +96,11 @@ func doReport() error {
 		qps = count / gap
 	}
 	reportMetrics = map[string]interface{} {
-		"bigdata.feature.avgTime" : avgTime,
-		"bigdata.feature.maxTime" : maxTime,
-		"bigdata.feature.overThresCount" : overThresCount,
-		"bigdata.feature.qps" : qps,
-		"bigdata.feature.cnt" : count,
+		".avgTime" : avgTime,
+		".maxTime" : maxTime,
+		".overThresCount" : overThresCount,
+		".qps" : qps,
+		".cnt" : count,
 	}
 
 
@@ -111,7 +112,7 @@ func doReport() error {
 	//}
 
 	for key, val := range reportMetrics {
-		reportData = append(reportData, IndicatorDef{endPoint, key, timestamp, gap, val, "GAUGE", ""})
+		reportData = append(reportData, IndicatorDef{endPoint, matricPre + key, timestamp, gap, val, "GAUGE", ""})
 	}
 
 	bodyStr, err = json.Marshal(reportData)
