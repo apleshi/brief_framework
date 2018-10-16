@@ -12,6 +12,7 @@ import (
 type GetHandler func(map[string]string) interface{}
 type PostHandler func([]byte) interface{}
 type PostHandlerMap func(map[string]string) interface{}
+type OptionHandler func(map[string]string) interface{}
 
 type PathHandler struct {
 	Path string
@@ -65,6 +66,11 @@ func DoPostProcess(c *gin.Context, p PostHandler) {
 	doFinalProcess(c, obj)
 }
 
+func DoOptionProcess(c *gin.Context, p OptionHandler) {
+	obj := p(nil)
+	doFinalProcess(c, obj)
+}
+
 func DoPostProcessMap(c *gin.Context, p PostHandlerMap) {
 	obj := p(getPostMap(c))
 	doFinalProcess(c, obj)
@@ -81,6 +87,10 @@ func doFinalProcess(c *gin.Context, obj interface{}) {
 	c.Set("returnString", string(s)) //for logging
 }
 
+func DefaultHandle(map[string]string) interface{} {
+	return "OK"
+}
+
 func InitHandler(router *gin.Engine)  {
 	for _, v := range ResSlice {
 		if p, ok := v.Handler.(GetHandler); ok {
@@ -94,6 +104,10 @@ func InitHandler(router *gin.Engine)  {
 		} else if p, ok := v.Handler.(PostHandlerMap); ok {
 			router.POST(v.Path, func(c *gin.Context) {
 				DoPostProcessMap(c, p)
+			})
+		} else if p, ok := v.Handler.(OptionHandler); ok {
+			router.OPTIONS(v.Path, func(c *gin.Context) {
+				DoOptionProcess(c, p)
 			})
 		} else {
 			logger.Instance().Warn("Handler can not recognize")
