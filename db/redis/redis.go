@@ -116,7 +116,7 @@ func (c *Client) Keys(pattern string) (*[]string, error) {
 	return &ret, nil
 }
 
-func (c *Client) ZRangeByScoreWithScores(key string, start, stop string, offset, count int64) (*[]redis.Z, error) {
+func (c *Client) ZRangeByScoreWithScores(key string, start, stop string, offset, count int64) ([]redis.Z, error) {
 	ret, err := c.Client.ZRangeByScoreWithScores(key, redis.ZRangeBy{start, stop, offset, count}).Result()
 	if err != nil {
 		//if err != redis.Nil {
@@ -124,10 +124,11 @@ func (c *Client) ZRangeByScoreWithScores(key string, start, stop string, offset,
 		//}
 		return nil, err
 	}
-	return &ret, nil
+
+	return ret, nil
 }
 
-func (c *Client) ZRangeWithScores(key string, start, stop int64) (*[]redis.Z, error) {
+func (c *Client) ZRangeWithScores(key string, start, stop int64) ([]redis.Z, error) {
 	ret, err := c.Client.ZRangeWithScores(key, start, stop).Result()
 	if err != nil {
 		//if err != redis.Nil {
@@ -135,14 +136,15 @@ func (c *Client) ZRangeWithScores(key string, start, stop int64) (*[]redis.Z, er
 		//}
 		return nil, err
 	}
-	return &ret, nil
+
+	return ret, nil
 }
 
 func (c *Client) PrintZRangeWithScores(key string, start, stop int64) (string) {
 	return c.Client.ZRangeWithScores(key, start, stop).String()
 }
 
-func (c *Client) ZRange(key string, start, stop int64) (*[]string, error) {
+func (c *Client) ZRange(key string, start, stop int64) ([]string, error) {
 	ret, err := c.Client.ZRange(key, start, stop).Result()
 	if err != nil {
 		//if err != redis.Nil {
@@ -150,7 +152,7 @@ func (c *Client) ZRange(key string, start, stop int64) (*[]string, error) {
 		//}
 		return nil, err
 	}
-	return &ret, nil
+	return ret, nil
 }
 
 func (c *Client) ZAdd(key string, score int64, mem string) error {
