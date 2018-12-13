@@ -2,6 +2,9 @@ package util
 
 import (
 	"net"
+	"bytes"
+	"compress/zlib"
+	"io"
 )
 
 func GetIntranetIp() string {
@@ -21,4 +24,18 @@ func GetIntranetIp() string {
 	}
 
 	return ""
+}
+
+func ZlibUnCompress(compressSrc []byte) []byte {
+	b := bytes.NewReader(compressSrc)
+	r, _ := zlib.NewReader(b)
+
+	if r != nil {
+		var out bytes.Buffer
+		defer r.Close()
+		io.Copy(&out, r)
+		return out.Bytes()
+	}
+
+	return nil
 }

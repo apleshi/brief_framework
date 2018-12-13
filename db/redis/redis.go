@@ -166,3 +166,31 @@ func (c *Client) ZAdd(key string, score int64, mem string) error {
 	}
 	return nil
 }
+
+func (c *Client) Pipeline(keys []string) []string {
+	p := c.Client.Pipeline().(*redis.Pipeline)
+	for i := range keys {
+		p.Get(keys[i])
+	}
+
+	results, err := p.Exec()
+	if err != nil && err != redis.Nil {
+		return nil
+	}
+
+	resSlice := []string{}
+	for i := range results {
+		res, err := results[i].(*redis.StringCmd).Result()
+		if err != nil {
+			if err != redis.Nil {
+				logger.Instance().Warn("redis get error, err = %v\n", err)
+			}
+
+			resSlice = append(resSlice, "")
+		} else {
+			resSlice = append(resSlice, res)
+		}
+	}
+
+	return resSlice
+}
