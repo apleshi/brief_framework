@@ -4,7 +4,6 @@ import (
 	"brief_framework/config"
 	"brief_framework/logger"
 	"brief_framework/plugin"
-	"brief_framework/util"
 	"context"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -15,7 +14,7 @@ import (
 
 func Serve() {
 	//check older log, to delete
-	util.Clean()
+	logger.Clean()
 	logger.Instance().Info("Init complete, start Servant ...")
 
 	serveAddr, err := config.Instance().GetValue(config.RunningMode(), "serve_addr")

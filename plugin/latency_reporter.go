@@ -11,6 +11,7 @@ import (
 	"strings"
 	"brief_framework/logger"
 	"io/ioutil"
+	"brief_framework/util"
 )
 
 type IndicatorDef struct {
@@ -36,7 +37,7 @@ func init() {
 
 	_, err = os.Stat(configFile)
 	if err != nil {
-		conf, err = goconfig.LoadConfigFile("../" + configFile)
+		conf, err = goconfig.LoadConfigFile(util.GetBaseDirectory() + "/" + configFile)
 	} else {
 		conf, err = goconfig.LoadConfigFile(configFile)
 	}

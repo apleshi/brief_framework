@@ -31,6 +31,10 @@ func NewRedisClient(addr, passwd string, db int) (*Client, error) {
 	return &c, nil
 }
 
+func (c *Client) Close() {
+	c.Client.Close()
+}
+
 func (c *Client) Set(key, value string) error {
 	err := c.Client.Set(key, value, 0).Err()
 	if err != nil {

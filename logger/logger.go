@@ -4,6 +4,7 @@ import (
 	"brief_framework/plugin/log4go"
 	"os"
 	"brief_framework/config"
+	"brief_framework/util"
 )
 
 type Logger struct {
@@ -37,22 +38,22 @@ func init() {
 	serverLogger.init()
 
 	mode := config.RunningMode()
-	serverLogConf := config.Instance().MustValue(mode, "log_server", "./conf/server.xml")
+	serverLogConf := config.Instance().MustValue(mode + ".log", "server_log_conf", "./conf/server.xml")
 	_, err := os.Stat(serverLogConf)
 	if err != nil {
 		//fmt.Fprintf(os.Stderr, "LoadConfiguration: Error: Could not open %q for reading: %s\n", filename, err)
-		serverLogger.LoadConfiguration("../" + serverLogConf)
+		serverLogger.LoadConfiguration(util.GetBaseDirectory() + "/" + serverLogConf)
 	} else {
 		serverLogger.LoadConfiguration(serverLogConf)
 	}
 
 	sessionLogger = new(Logger)
 	sessionLogger.init()
-	sessionLogConf := config.Instance().MustValue(mode, "log_server", "./conf/session.xml")
+	sessionLogConf := config.Instance().MustValue(mode + ".log", "session_log_conf", "./conf/session.xml")
 	_, err = os.Stat(sessionLogConf)
 	if err != nil {
 		//fmt.Fprintf(os.Stderr, "LoadConfiguration: Error: Could not open %q for reading: %s\n", filename, err)
-		serverLogger.LoadConfiguration("../" + sessionLogConf)
+		serverLogger.LoadConfiguration(util.GetBaseDirectory() + "/"  + sessionLogConf)
 	} else {
 		sessionLogger.LoadConfiguration(sessionLogConf)
 	}
